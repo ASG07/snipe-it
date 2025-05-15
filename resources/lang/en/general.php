@@ -1,0 +1,7 @@
+'accessories'			=> 'Accessories',
+'access'               => 'Access',
+'activated'			    => 'Activated',
+'accessory'				=> 'Accessory',
+'accessory_report'		=> 'Accessory Report',
+'action'                => 'Action',
+'activity_report'		=> 'Activity Report', 

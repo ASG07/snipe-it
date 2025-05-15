@@ -807,6 +807,66 @@ dir="{{ Helper::determineLanguageDirection() }}">
                             </li>
                         @endcan
 
+                        @can('index', \App\Models\Access::class)
+                            <li class="treeview{{ ((Request::is('access*')) ? ' active' : '') }}">
+                                <a href="#">
+                                    <x-icon type="key" class="fa-fw" />
+                                    <span>{{ trans('general.access') }}</span>
+                                    <x-icon type="angle-left" class="pull-right fa-fw"/>
+                                </a>
+                                <ul class="treeview-menu">
+                                    <li>
+                                        <a href="{{ url('access') }}">
+                                            <x-icon type="circle" class="text-grey fa-fw"/>
+                                            {{ trans('general.list_all') }}
+                                            <span class="badge">
+                                                {{ (isset($total_access)) ? $total_access : '' }}
+                                            </span>
+                                        </a>
+                                    </li>
+
+                                    <li id="assigned-sidenav-option"{!! (Request::query('status') == 'Assigned' ? ' class="active"' : '') !!}>
+                                        <a href="{{ url('access?status=Assigned') }}">
+                                            <x-icon type="circle" class="text-blue fa-fw" />
+                                            {{ trans('general.assigned') }}
+                                            <span class="badge">{{ (isset($total_assigned_access_sidebar)) ? $total_assigned_access_sidebar : '' }}</span>
+                                        </a>
+                                    </li>
+                                    <li id="unassigned-sidenav-option"{!! (Request::query('status') == 'Unassigned' ? ' class="active"' : '') !!}>
+                                        <a href="{{ url('access?status=Unassigned') }}">
+                                            <x-icon type="circle" class="text-orange fa-fw" />
+                                            {{ trans('general.unassigned') }}
+                                            <span class="badge">{{ (isset($total_unassigned_access_sidebar)) ? $total_unassigned_access_sidebar : '' }}</span>
+                                        </a>
+                                    </li>
+                                    <li id="expired-sidenav-option"{!! (Request::query('status') == 'Expired' ? ' class="active"' : '') !!}>
+                                        <a href="{{ url('access?status=Expired') }}">
+                                            <x-icon type="circle" class="text-red fa-fw" />
+                                            {{ trans('general.expired') }}
+                                            <span class="badge">{{ (isset($total_expired_access_sidebar)) ? $total_expired_access_sidebar : '' }}</span>
+                                        </a>
+                                    </li>
+
+                                    <li class="divider">&nbsp;</li>
+
+                                    @can('checkout', \App\Models\Access::class)
+                                        <li{!! (Request::is('access/bulkcheckout') ? ' class="active"' : '') !!}>
+                                            <a href="{{ route('access.bulkcheckout.show') }}">
+                                                {{ trans('general.bulk_checkout') }}
+                                            </a>
+                                        </li>
+                                    @endcan
+
+                                    @can('create', \App\Models\Access::class)
+                                        <li{!! (Request::query('Deleted') ? ' class="active"' : '') !!}>
+                                            <a href="{{ url('access?status=Deleted') }}">
+                                                {{ trans('general.deleted') }}
+                                            </a>
+                                        </li>
+                                    @endcan
+                                </ul>
+                            </li>
+                        @endcan
 
                     </ul>
                 </section>

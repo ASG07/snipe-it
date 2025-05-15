@@ -37,22 +37,23 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function mapWebRoutes()
     {
-        Route::group([
-            'middleware' => 'web',
-//            'namespace' => $this->namespace, //okay, I don't know what this means, but somehow this might be a problem for us?
-        ], function ($router) {
-            require base_path('routes/web/hardware.php');
-            require base_path('routes/web/models.php');
-            require base_path('routes/web/accessories.php');
-            require base_path('routes/web/licenses.php');
-            require base_path('routes/web/locations.php');
-            require base_path('routes/web/consumables.php');
-            require base_path('routes/web/fields.php');
-            require base_path('routes/web/components.php');
-            require base_path('routes/web/users.php');
-            require base_path('routes/web/kits.php');
-            require base_path('routes/web.php');
-        });
+        Route::middleware('web')
+            ->namespace($this->namespace)
+            ->group(function () {
+                require_once base_path('routes/web.php');
+                require_once base_path('routes/web/accessories.php');
+                require_once base_path('routes/web/access.php');
+                require_once base_path('routes/web/categories.php');
+                require base_path('routes/web/hardware.php');
+                require base_path('routes/web/models.php');
+                require base_path('routes/web/licenses.php');
+                require base_path('routes/web/locations.php');
+                require base_path('routes/web/consumables.php');
+                require base_path('routes/web/fields.php');
+                require base_path('routes/web/components.php');
+                require base_path('routes/web/users.php');
+                require base_path('routes/web/kits.php');
+            });
     }
 
     /**

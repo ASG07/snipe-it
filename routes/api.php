@@ -608,6 +608,27 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'throttle:api']], functi
 
     Route::put('/hardware/{asset}', [Api\AssetsController::class, 'update'])->name('api.assets.put-update');
 
+    /**
+     * Access API routes
+     */
+    Route::group(['prefix' => 'access'], function () {
+        Route::get('selectlist',
+            [Api\AccessController::class, 'selectlist']
+        )->name('api.access.selectlist');
+    });
+
+    Route::resource('access', Api\AccessController::class, [
+        'names' => [
+            'index' => 'api.access.index',
+            'show' => 'api.access.show',
+            'update' => 'api.access.update',
+            'store' => 'api.access.store',
+            'destroy' => 'api.access.destroy',
+        ],
+        'except' => ['create', 'edit'],
+        'parameters' => ['access' => 'access_id'],
+    ]); // end access API routes
+
     Route::resource('hardware',
         Api\AssetsController::class,
         ['names' => [

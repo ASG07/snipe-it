@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Accessory;
+use App\Models\Access;
 use App\Models\Asset;
 use App\Models\AssetModel;
 use App\Models\Category;
@@ -21,6 +22,7 @@ use App\Models\Statuslabel;
 use App\Models\Supplier;
 use App\Models\User;
 use App\Policies\AccessoryPolicy;
+use App\Policies\AccessPolicy;
 use App\Policies\AssetModelPolicy;
 use App\Policies\AssetPolicy;
 use App\Policies\CategoryPolicy;
@@ -54,6 +56,7 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Accessory::class => AccessoryPolicy::class,
+        Access::class => AccessPolicy::class,
         Asset::class => AssetPolicy::class,
         AssetModel::class => AssetModelPolicy::class,
         Category::class => CategoryPolicy::class,
