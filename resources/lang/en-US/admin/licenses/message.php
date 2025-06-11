@@ -54,4 +54,27 @@ return array(
         'success' => 'The license was checked in successfully'
     ),
 
+    'audit' => array(
+        'error'   => 'There was an issue auditing the license. Please try again.',
+        'success' => 'The license was audited successfully',
+        'bulk_success' => 'Audit dates updated for :count license seat in :license_name.|Audit dates updated for :count license seats in :license_name.',
+        'bulk_error' => 'No license seats were updated during the audit process.',
+        'no_seats' => 'This license has no seats to audit. Please add seats to this license before attempting to audit.',
+    ),
+
+    'bulkedit' => array(
+        'error'   => 'No fields were changed, so nothing was updated.',
+        'success' => 'Licenses updated.'
+    ),
+
+    'bulkaudit' => array(
+        'error'   => 'No licenses were selected for audit.',
+        'success' => ':count license was audited successfully.|:count licenses were audited successfully.',
+    ),
+
+    'notes' => array(
+        'error'   => 'There was an issue adding notes to the license seats. Please try again.',
+        'success' => 'Notes added to :count license seat successfully.|Notes added to :count license seats successfully.',
+    ),
+
 );

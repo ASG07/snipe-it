@@ -10,6 +10,7 @@ use App\Models\License;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
+use App\Models\Company;
 
 class LicensesController extends Controller
 {
@@ -24,6 +25,10 @@ class LicensesController extends Controller
     {
         $this->authorize('view', License::class);
 
+        if ($request->filled('action') && $request->filled('upcoming_status')) {
+            return $this->getDueForActionList($request->input('action'), $request->input('upcoming_status'));
+        }
+        
         $licenses = License::with('company', 'manufacturer', 'supplier','category', 'adminuser')->withCount('freeSeats as free_seats_count');
 
         if ($request->filled('company_id')) {
@@ -259,5 +264,80 @@ class LicensesController extends Controller
         $licenses = $licenses->orderBy('name', 'ASC')->paginate(50);
 
         return (new SelectlistTransformer)->transformSelectlist($licenses);
+    }
+
+    /**
+     * Audit a license
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function auditLicense(Request $request, $id) : JsonResponse
+    {
+        $this->authorize('audit', License::class);
+
+        $license = License::findOrFail($id);
+        $settings = \App\Models\Setting::getSettings();
+        $dt = \Carbon\Carbon::now()->addMonths($settings->audit_interval)->toDateString();
+
+        $originalValues = $license->getRawOriginal();
+
+        $license->next_audit_date = $request->filled('next_audit_date') 
+            ? $request->input('next_audit_date') 
+            : $dt;
+        $license->last_audit_date = date('Y-m-d H:i:s');
+
+        if ($license->save()) {
+            $license->logAudit($request->input('note'), null, null, $originalValues);
+            
+            $payload = [
+                'id' => $license->id,
+                'name' => $license->name,
+                'serial' => $license->serial,
+                'note' => $request->input('note'),
+                'next_audit_date' => \App\Helpers\Helper::getFormattedDateObject($license->next_audit_date),
+            ];
+            
+            return response()->json(Helper::formatStandardApiResponse('success', $payload, trans('admin/licenses/message.audit.success')));
+        }
+        
+        return response()->json(Helper::formatStandardApiResponse('error', null, $license->getErrors()));
+    }
+
+    /**
+     * Get list of licenses due for audit or other action
+     * Note: License auditing now operates on license seats, not licenses directly
+     *
+     * @param  string  $action
+     * @param  string  $upcoming_status
+     * @return array
+     */
+    public function getDueForActionList($action, $upcoming_status) : array
+    {
+        $this->authorize('audit', License::class);
+        
+        // Redirect audit requests to license seats
+        if ($action == 'audits') {
+            // Return empty array since license auditing is now handled at seat level
+            return (new \App\Http\Transformers\LicensesTransformer)->transformLicenses(collect(), 0);
+        }
+        
+        $licenses = License::with(['category', 'company', 'manufacturer', 'supplier', 'adminuser'])
+            ->withCount('freeSeats as free_seats_count');
+        
+        $licenses = Company::scopeCompanyables($licenses);
+        
+        // Make sure the offset and limit are actually integers and do not exceed system limits
+        $offset = request('offset') ? (int) request('offset') : 0;
+        $limit = request('limit') ? (int) request('limit') : 50;
+        
+        $order = request('order') === 'asc' ? 'asc' : 'desc';
+        $sort = in_array(request('sort'), ['id', 'name', 'serial', 'purchase_date']) ? request('sort') : 'created_at';
+        
+        $total = $licenses->count();
+        $licenses = $licenses->skip($offset)->take($limit)->orderBy($sort, $order)->get();
+        
+        return (new \App\Http\Transformers\LicensesTransformer)->transformLicenses($licenses, $total);
     }
 }

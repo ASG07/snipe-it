@@ -425,6 +425,14 @@
         var item_destination = '';
         var item_icon;
 
+        // Handle assigned_user object structure from license seats
+        if (value && typeof value === 'object' && value.id && value.name && !value.type) {
+            // Format assigned_user object from license seats
+            var item_icon = 'fas fa-user';
+            var item_destination = 'users';
+            return '<nobr><a href="{{ config('app.url') }}/' + item_destination +'/' + value.id + '" data-tooltip="true" title="user"><i class="' + item_icon + ' text-{{ $snipeSettings->skin!='' ? $snipeSettings->skin : 'blue' }} "></i> ' + value.name + '</a></nobr>';
+        }
+
         if ((value) && (value.type)) {
 
             if (value.type == 'asset') {
@@ -510,7 +518,30 @@
         } else {
             return '<a href="{{ config('app.url') }}/licenses/' + row.id + '/checkin" class="btn btn-sm bg-purple" data-tooltip="true" title="{{ trans('general.checkin_tooltip') }}">{{ trans('general.checkin') }}</a>';
         }
+    }
 
+    // This is for license seat audit actions in the listing
+    function licenseSeatAuditActionsFormatter(value, row) {
+        if (row.available_actions && row.available_actions.audit === true) {
+            return '<a href="{{ config('app.url') }}/seats/' + row.id + '/audit" class="btn btn-sm btn-warning" data-tooltip="true" title="{{ trans('general.audit') }}"><x-icon type="audit" /> {{ trans('general.audit') }}</a>';
+        }
+        return '';
+    }
+
+    // Format license name as a link for license seats
+    function licenseLinkFormatter(value, row) {
+        if (row.license_id) {
+            return '<a href="{{ config('app.url') }}/licenses/' + row.license_id + '">' + value + '</a>';
+        }
+        return value;
+    }
+
+    // Format asset details for license seats
+    function licenseSeatAssetFormatter(value, row) {
+        if (row.assigned_asset && row.assigned_asset.id) {
+            return '<a href="{{ config('app.url') }}/hardware/' + row.assigned_asset.id + '">' + row.assigned_asset.name + '</a>';
+        }
+        return '';
     }
 
     function genericCheckinCheckoutFormatter(destination) {

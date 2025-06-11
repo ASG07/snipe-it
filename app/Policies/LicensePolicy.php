@@ -48,6 +48,17 @@ class LicensePolicy extends CheckoutablePermissionsPolicy
             return true;
         }
         return false;
+    }
 
+    /**
+     * Determine whether the user can audit licenses.
+     *
+     * @param  \App\Models\User  $user
+     * @param  \App\Models\License  $license
+     * @return mixed
+     */
+    public function audit(User $user, License $license = null)
+    {
+        return $user->hasAccess('licenses.audit');
     }
 }

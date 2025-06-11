@@ -609,7 +609,7 @@ class License extends Depreciable
     public function totalcount()
     {
         $avail = $this->availSeatsCount;
-        $taken = $this->assignedcount();
+        $taken = $this->assignedSeatsCount;
         $diff = ($avail + $taken);
 
         return $diff;
@@ -741,6 +741,12 @@ class License extends Depreciable
      */
     public function scopeOrderByCreatedBy($query, $order)
     {
-        return $query->leftJoin('users as admin_sort', 'licenses.created_by', '=', 'admin_sort.id')->select('licenses.*')->orderBy('admin_sort.first_name', $order)->orderBy('admin_sort.last_name', $order);
+        return $query->join('users', 'licenses.created_by', '=', 'users.id')->select('licenses.*')
+            ->orderBy('users.first_name', $order)
+            ->orderBy('users.last_name', $order);
     }
+
+
+
+
 }

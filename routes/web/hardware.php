@@ -153,6 +153,14 @@ Route::group(
             [AssetFilesController::class, 'destroy']
         )->name('delete/assetfile')->withTrashed();
 
+        Route::get('{asset}/showfile/{fileId}/edit',
+            [AssetFilesController::class, 'edit']
+        )->name('edit/assetfile')->withTrashed();
+
+        Route::put('{asset}/showfile/{fileId}/update',
+            [AssetFilesController::class, 'update']
+        )->name('update/assetfile')->withTrashed();
+
         Route::post(
             'bulkedit',
             [BulkAssetsController::class, 'edit']

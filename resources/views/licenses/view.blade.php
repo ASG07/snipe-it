@@ -258,6 +258,7 @@
                 @endif
 
 
+
                 @if ($license->depreciation)
                 <div class="row">
                   <div class="col-md-3">
@@ -532,6 +533,20 @@
       <a href="{{ route('clone/license', $license->id) }}" class="btn btn-info btn-block btn-sm btn-social hidden-print" style="margin-bottom: 5px;">
         <x-icon type="clone" />
         {{ trans('admin/licenses/general.clone') }}</a>
+    @endcan
+
+    @can('audit', \App\Models\License::class)
+      @if($license->licenseseats->count() > 0)
+        <a href="{{ route('licenses.audit.create', $license->id) }}" class="btn btn-warning btn-sm btn-block btn-social hidden-print" style="margin-bottom: 5px;">
+          <x-icon type="audit" />
+          {{ trans('general.audit') }}
+        </a>
+      @else
+        <button class="btn btn-warning btn-sm btn-block btn-social hidden-print" style="margin-bottom: 5px;" disabled data-tooltip="true" title="{{ trans('admin/licenses/general.no_seats_to_audit') }}">
+          <x-icon type="audit" />
+          {{ trans('general.audit') }}
+        </button>
+      @endif
     @endcan
 
     @can('checkout', $license)

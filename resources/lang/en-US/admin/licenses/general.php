@@ -6,6 +6,7 @@ return array(
     'checkin'  					=> 'Checkin License Seat',
     'checkout_history'  		=> 'Checkout History',
     'checkout'  				=> 'Checkout License Seat',
+    'audit'  					=> 'Audit License Seat',
     'edit'  					=> 'Edit License',
     'filetype_info'				=> 'Allowed filetypes are png, gif, jpg, jpeg, doc, docx, pdf, txt, zip, and rar.',
     'clone'  					=> 'Clone License',
@@ -49,4 +50,10 @@ return array(
 
     'below_threshold' => 'There are only :remaining_count seats left for this license with a minimum quantity of :min_amt. You may want to consider purchasing more seats.',
     'below_threshold_short' => 'This item is below the minimum required quantity.',
+    'audit_help_text' => 'Auditing this license will update the audit dates for all license seats under this license.',
+    'seats_total' => 'total seats',
+    'seats_to_audit' => 'License Seats to Audit',
+    'will_be_audited' => 'will be audited',
+    'no_seats_to_audit' => 'No seats available to audit. Please add seats to this license first.',
+    'bulk_audit_note' => 'This audit will update all seats under this license at once.',
 );

@@ -238,7 +238,7 @@ dir="{{ Helper::determineLanguageDirection() }}">
                                             </li>
                                         @endcan
                                         @can('create', \App\Models\Consumable::class)
-                                            <li {!! (Request::is('consunmables/create') ? 'class="active"' : '') !!}>
+                                            <li {!! (Request::is('consumables/create') ? 'class="active"' : '') !!}>
                                                 <a href="{{ route('consumables.create') }}" tabindex="-1">
                                                     <x-icon type="consumables" />
                                                     {{ trans('general.consumable') }}
@@ -597,11 +597,31 @@ dir="{{ Helper::determineLanguageDirection() }}">
                             </li>
                         @endcan
                         @can('view', \App\Models\License::class)
-                            <li{!! (Request::is('licenses*') ? ' class="active"' : '') !!}>
-                                <a href="{{ route('licenses.index') }}">
+                            <li id="licenses-sidenav-option" class="treeview{{ (Request::is('licenses*') || Request::is('seats*') ? ' active' : '') }}">
+                                <a href="#">
                                     <x-icon type="licenses" class="fa-fw"/>
                                     <span>{{ trans('general.licenses') }}</span>
+                                    <x-icon type="angle-left" class="pull-right fa-fw"/>
                                 </a>
+                                <ul class="treeview-menu">
+                                    <li>
+                                        <a href="{{ route('licenses.index') }}">
+                                            <x-icon type="licenses" class="text-blue fa-fw"/>
+                                            {{ trans('general.licenses') }}
+                                        </a>
+                                    </li>
+                                    
+                                    @can('audit', \App\Models\License::class)
+                                        <li{!! (Request::is('license-seats') ? ' class="active"' : '') !!}>
+                                            <a href="{{ route('license_seats.index') }}">
+                                                <x-icon type="licenses" class="text-blue fa-fw"/>
+                                                {{ trans('admin/licenses/general.license_seats') }}
+                                            </a>
+                                        </li>
+                                    @endcan
+
+
+                                </ul>
                             </li>
                         @endcan
                         @can('index', \App\Models\Accessory::class)
@@ -1198,6 +1218,13 @@ dir="{{ Helper::determineLanguageDirection() }}">
                 observer.observe(document.body, config);
             });
 
+            // Expand the licenses menu when on an audit page
+            $(document).ready(function() {
+                if (window.location.href.indexOf('licenses/audit') > 0 || window.location.href.indexOf('seats/audit') > 0) {
+                    $('#licenses-sidenav-option').addClass('active menu-open');
+                    $('#licenses-sidenav-option').find('.treeview-menu').show();
+                }
+            });
 
         </script>
 

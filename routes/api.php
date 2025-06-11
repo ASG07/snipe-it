@@ -691,6 +691,22 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'throttle:api']], functi
             ]
         )->name('api.licenses.selectlist');
 
+        // This gets the "due or overdue" API endpoints for audits
+        Route::get('{action}/{upcoming_status}',
+              [
+                  Api\LicensesController::class,
+                  'index'
+              ]
+        )->name('api.licenses.list-upcoming')
+        ->where(['action' => 'audit|audits', 'upcoming_status' => 'due|overdue|due-or-overdue']);
+
+        Route::post('{license}/audit',
+            [
+                Api\LicensesController::class,
+                'auditLicense'
+            ]
+        )->name('api.license.audit');
+
         }); 
 
         Route::resource('licenses', 
@@ -1345,6 +1361,29 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'throttle:api']], functi
             'getLabels'
         ])->name('api.assets.labels');
         // end generate label routes
+
+        // Add license seat audit API routes
+        Route::get('license_seats/due', 
+            [
+                Api\LicenseSeatsAuditController::class,
+                'due'
+            ]
+        )->name('api.license_seats.due');
+        
+        Route::get('license_seats/overdue', 
+            [
+                Api\LicenseSeatsAuditController::class,
+                'overdue'
+            ]
+        )->name('api.license_seats.overdue');
+
+        Route::get('license_seats/all', 
+            [
+                Api\LicenseSeatsAuditController::class,
+                'all'
+            ]
+        )->name('api.license_seats.all');
+        
 
 
 }); // end API routes

@@ -2,6 +2,7 @@
 
 return array(
 
+    'user'              => 'User',
     'asset'             => 'Asset',
     'checkin'           => 'Checkin',
     'create'            => 'Create License',
@@ -9,6 +10,9 @@ return array(
     'license_key'       => 'Product Key',
     'maintained'        => 'Maintained',
     'name'              => 'Software Name',
+    'serial'            => 'Product Serial',
+    'seat'              => 'License Seat',
+    'unassigned'        => 'Unassigned',
     'no_depreciation'   => 'Do Not Depreciate',
     'purchase_order'    => 'Purchase Order Number',
     'reassignable'      => 'Reassignable',
@@ -18,5 +22,17 @@ return array(
     'to_email'          => 'Licensed to Email',
     'to_name'           => 'Licensed to Name',
     'update'            => 'Update License',
-    'checkout_help'     => 'You must check a license out to a hardware asset or a person. You can select both, but the owner of the asset must match the person you\'re checking the asset out to.'
+    'checkout_help'     => 'You must check a license out to a hardware asset or a person. You can select both, but the owner of the asset must match the person you\'re checking the asset out to.',
+    'add_audit_note'    => 'Add Audit Note',
+    'set_audit_date'    => 'Set Next Audit Date',
+    'bulk_audit_note'   => 'Bulk Audit Note',
+    'bulk_audit_date'   => 'Set Next Audit Date for Multiple Seats',
+    'add_notes'         => 'Add Notes',
+    'bulk_add_notes'    => 'Add Notes to Multiple Seats',
+    'bulk_audit'        => 'Bulk Audit License Seats',
+    'audit_note_placeholder' => 'Enter a note for this audit...',
+    'audit_note_help'   => 'This note will be recorded for all selected license seats.',
+    'notes_help'        => 'Enter notes to add to the selected license seats.',
+    'overwrite_existing_notes' => 'Overwrite existing notes',
+    'overwrite_notes_help' => 'If checked, existing notes will be replaced. If unchecked, new notes will be appended to existing notes.'
 );

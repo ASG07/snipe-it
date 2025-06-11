@@ -8,6 +8,7 @@ use App\Notifications\CheckoutLicenseNotification;
 use App\Presenters\Presentable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Carbon\Carbon;
 
 class LicenseSeat extends SnipeModel implements ICompanyableChild
 {
@@ -31,6 +32,18 @@ class LicenseSeat extends SnipeModel implements ICompanyableChild
         'assigned_to',
         'asset_id',
         'notes',
+        'last_audit_date',
+        'next_audit_date',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'last_audit_date' => 'datetime',
+        'next_audit_date' => 'datetime:Y-m-d',
     ];
 
     use Acceptable;
@@ -102,7 +115,7 @@ class LicenseSeat extends SnipeModel implements ICompanyableChild
      *
      * @author A. Gianotto <snipe@snipe.net>
      * @since [v4.0]
-     * @return string
+     * @return object|null
      */
     public function location()
     {
@@ -111,8 +124,8 @@ class LicenseSeat extends SnipeModel implements ICompanyableChild
         } elseif (($this->asset) && ($this->asset->location)) {
             return $this->asset->location;
         }
-
-        return false;
+        
+        return null;
     }
 
     /**
@@ -129,5 +142,77 @@ class LicenseSeat extends SnipeModel implements ICompanyableChild
             ->leftJoin('departments as license_user_dept', 'license_user_dept.id', '=', 'license_seat_users.department_id')
             ->whereNotNull('license_seats.assigned_to')
             ->orderBy('license_user_dept.name', $order);
+    }
+
+    /**
+     * Query license seats due for audit based on next_audit_date
+     * 
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  \App\Models\Setting  $settings
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeDueForAudit($query, $settings)
+    {
+        $interval = $settings->audit_warning_days ?? 0;
+        $warningDate = Carbon::now()->addDays($interval);
+        
+        return $query->whereNotNull('license_seats.next_audit_date')
+                     ->whereNull('license_seats.deleted_at')
+                     ->where('license_seats.next_audit_date', '<=', $warningDate->format('Y-m-d'))
+                     ->where('license_seats.next_audit_date', '>=', Carbon::now()->format('Y-m-d'));
+    }
+
+    /**
+     * Query license seats overdue for audit
+     * 
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeOverdueForAudit($query)
+    {
+        return $query->whereNotNull('license_seats.next_audit_date')
+                     ->whereNull('license_seats.deleted_at')
+                     ->where('license_seats.next_audit_date', '<', Carbon::now()->format('Y-m-d'));
+    }
+
+    /**
+     * Query license seats that are due or overdue for audit
+     * 
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  \App\Models\Setting  $settings
+     * @return \Illuminate\Database\Eloquent\Builder  
+     */
+    public function scopeDueOrOverdueForAudit($query, $settings)
+    {
+        return $query->where(function ($query) {
+            $query->overdueForAudit();
+        })->orWhere(function ($query) use ($settings) {
+            $query->dueForAudit($settings);
+        });
+    }
+
+
+
+    /**
+     * Query all license seats for audit purposes
+     * 
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeAllSeats($query)
+    {
+        return $query->whereNull('license_seats.deleted_at');
+    }
+
+    /**
+     * Query license seats that have been audited (have a last_audit_date)
+     * 
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeAudited($query)
+    {
+        return $query->whereNotNull('license_seats.last_audit_date')
+                     ->whereNull('license_seats.deleted_at');
     }
 }

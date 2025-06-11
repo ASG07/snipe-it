@@ -387,4 +387,91 @@ class LicensesController extends Controller
 
         return $response;
     }
+
+
+
+
+
+    /**
+     * Display the audit form for a specific license
+     *
+     * @param \App\Models\License $license
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    public function audit(License $license)
+    {
+        $this->authorize('audit', License::class);
+        $settings = \App\Models\Setting::getSettings();
+
+        $license->setRules($license->getRules());
+
+        if ($license->isInvalid()) {
+            return redirect()->route('licenses.edit', $license)->withErrors($license->getErrors());
+        }
+
+        $dt = \Carbon\Carbon::now()->addMonths($settings->audit_interval)->toDateString();
+        return view('licenses/audit')->with('license', $license)->with('item', $license)->with('next_audit_date', $dt);
+    }
+
+    /**
+     * Store the license audit data, bulk updates all license seats
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\License $license
+     * @return \Illuminate\Http\RedirectResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    public function auditStore(Request $request, License $license)
+    {
+        $this->authorize('audit', License::class);
+
+        $nextAuditDate = $request->input('next_audit_date');
+        $note = $request->input('note') ?: 'License audit - bulk update of all seats';
+        
+        // Sanitize user inputs
+        $note = str_replace(["\r", "\n"], ' ', trim($note));
+        
+        $seats = $license->licenseseats;
+        
+        if ($seats->count() == 0) {
+            return redirect()->back()->withInput()
+                ->with('error', trans('admin/licenses/message.audit.no_seats'));
+        }
+        
+        $updatedCount = 0;
+        $errors = 0;
+        
+        foreach ($seats as $seat) {
+            $originalValues = $seat->getOriginal();
+            $seat->next_audit_date = $nextAuditDate;
+            $seat->last_audit_date = \Carbon\Carbon::now();
+            
+            // save the note to the seat's notes field if provided
+            if ($request->filled('note')) {
+                $seat->notes = $note;
+            }
+            
+            if ($seat->save()) {
+                $seat->logAudit($note, null, null, $originalValues);
+                $updatedCount++;
+            } else {
+                $errors++;
+            }
+        }
+        
+        if ($updatedCount > 0) {
+            $message = trans_choice('admin/licenses/message.audit.bulk_success', $updatedCount, [
+                'count' => $updatedCount,
+                'license_name' => $license->name
+            ]);
+            return redirect()->route('licenses.index')
+                ->with('success', $message);
+        }
+        
+        return redirect()->back()->withInput()
+            ->with('error', trans('admin/licenses/message.audit.bulk_error'));
+    }
+
+
 }

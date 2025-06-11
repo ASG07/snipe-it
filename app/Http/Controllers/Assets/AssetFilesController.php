@@ -8,6 +8,7 @@ use App\Http\Requests\UploadFileRequest;
 use App\Models\Actionlog;
 use App\Models\Asset;
 use \Illuminate\Http\Response;
+use \Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use \Illuminate\Contracts\View\View;
 use \Illuminate\Http\RedirectResponse;
@@ -100,6 +101,69 @@ class AssetFilesController extends Controller
             }
             $log->delete();
             return redirect()->back()->withFragment('files')->with('success', trans('admin/hardware/message.deletefile.success'));
+        }
+
+        return redirect()->route('hardware.show', $asset)->with('error', trans('general.log_record_not_found'));
+    }
+
+    /**
+     * Show the form for editing the file note
+     *
+     * @param  Asset $asset
+     * @param  int $fileId
+     */
+    public function edit(Asset $asset, $fileId = null) : JsonResponse | RedirectResponse
+    {
+        $this->authorize('update', $asset);
+
+        if ($log = Actionlog::find($fileId)) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'id' => $log->id,
+                    'note' => $log->note,
+                    'filename' => $log->filename
+                ]);
+            }
+            return redirect()->route('hardware.show', $asset)->withFragment('files');
+        }
+
+        return redirect()->route('hardware.show', $asset)->with('error', trans('general.log_record_not_found'));
+    }
+
+    /**
+     * Update the file note
+     *
+     * @param  Asset $asset
+     * @param  int $fileId
+     */
+    public function update(Asset $asset, $fileId = null) : RedirectResponse | JsonResponse
+    {
+        $this->authorize('update', $asset);
+
+        $request = request();
+        $request->validate([
+            'note' => 'nullable|string|max:50000',
+        ]);
+
+        if ($log = Actionlog::find($fileId)) {
+            $log->note = $request->input('note');
+            $log->save();
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => trans('admin/hardware/message.updatefile.success')
+                ]);
+            }
+
+            return redirect()->back()->withFragment('files')->with('success', trans('admin/hardware/message.updatefile.success'));
+        }
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => trans('general.log_record_not_found')
+            ], 404);
         }
 
         return redirect()->route('hardware.show', $asset)->with('error', trans('general.log_record_not_found'));

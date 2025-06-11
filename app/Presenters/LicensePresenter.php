@@ -296,6 +296,15 @@ class LicensePresenter extends Presenter
                 'visible' => true,
                 'formatter' => 'licenseSeatInOutFormatter',
             ],
+            [
+                'field' => 'actions',
+                'searchable' => false,
+                'sortable' => false,
+                'switchable' => false,
+                'title' => trans('table.actions'),
+                'visible' => true,
+                'formatter' => 'licenseSeatAuditActionsFormatter',
+            ],
         ];
 
         return json_encode($layout);

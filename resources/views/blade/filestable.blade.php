@@ -4,6 +4,7 @@
     'object',
     'showfile_routename',
     'deletefile_routename',
+    'editfile_routename' => null,
 ])
 
 <!-- begin non-ajaxed file listing table -->
@@ -126,10 +127,26 @@
                     {{ ($file->adminuser) ? $file->adminuser->present()->getFullNameAttribute() : '' }}
                 </td>
                 <td>
-                    <a class="btn delete-asset btn-danger btn-sm hidden-print" href="{{ route($deletefile_routename, [$object->id, $file->id]) }}" data-content="Are you sure you wish to delete this file?" data-title="{{ trans('general.delete') }} {{ $file->filename }}?">
-                        <x-icon type="delete" />
-                        <span class="sr-only">{{ trans('general.delete') }}</span>
-                    </a>
+                    @can('update', $object)
+                        @if(isset($editfile_routename))
+                            <a class="btn btn-warning btn-sm hidden-print edit-file-note" href="#" 
+                               data-file-id="{{ $file->id }}" 
+                               data-edit-url="{{ route($editfile_routename, [$object->id, $file->id]) }}"
+                               data-update-url="{{ route(str_replace('edit/', 'update/', $editfile_routename), [$object->id, $file->id]) }}"
+                               data-toggle="modal" data-target="#editFileNoteModal"
+                               data-tooltip="true" title="{{ trans('general.edit') }} {{ trans('general.note') }}">
+                                <x-icon type="edit" />
+                                <span class="sr-only">{{ trans('general.edit') }}</span>
+                            </a>
+                        @endif
+                    @endcan
+                    
+                    @can('update', $object)
+                        <a class="btn delete-asset btn-danger btn-sm hidden-print" href="{{ route($deletefile_routename, [$object->id, $file->id]) }}" data-content="Are you sure you wish to delete this file?" data-title="{{ trans('general.delete') }} {{ $file->filename }}?">
+                            <x-icon type="delete" />
+                            <span class="sr-only">{{ trans('general.delete') }}</span>
+                        </a>
+                    @endcan
                 </td>
 
 

@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Models\License;
 use App\Models\LicenseSeat;
 use Tabuna\Breadcrumbs\Trail;
+use App\Models\Setting;
 
 // Licenses
 Route::group(['prefix' => 'licenses', 'middleware' => ['auth']], function () {
@@ -13,6 +14,19 @@ Route::group(['prefix' => 'licenses', 'middleware' => ['auth']], function () {
     Route::get('{licenseId}/freecheckout',
         [Licenses\LicensesController::class, 'getFreeLicense']
     )->name('licenses.freecheckout');
+
+
+        
+    Route::get('{license}/audit', [Licenses\LicensesController::class, 'audit'])
+        ->name('licenses.audit.create')
+        ->breadcrumbs(fn (Trail $trail, License $license) =>
+        $trail->parent('licenses.show', $license)
+            ->push(trans('general.audit'))
+        );
+
+    Route::post('{license}/audit',
+        [Licenses\LicensesController::class, 'auditStore']
+    )->name('licenses.audit.store');
 
     Route::get('{license}/checkout/{seatId?}', [Licenses\LicenseCheckoutController::class, 'create'])
         ->name('licenses.checkout')
@@ -47,6 +61,19 @@ Route::group(['prefix' => 'licenses', 'middleware' => ['auth']], function () {
         [Licenses\LicenseCheckoutController::class, 'bulkCheckout']
     )->name('licenses.bulkcheckout');
 
+    Route::post('bulkedit',
+        [Licenses\LicensesController::class, 'bulkEdit']
+    )->name('licenses.bulkedit');
+
+    Route::post('bulkaudit',
+        [Licenses\LicensesController::class, 'bulkAudit']
+    )->name('licenses.bulkaudit');
+
+    // Handle GET requests to bulkaudit (for back button navigation) by redirecting to licenses index
+    Route::get('bulkaudit', function() {
+        return redirect()->route('licenses.index');
+    });
+
     Route::post(
     '{licenseId}/upload',
         [Licenses\LicenseFilesController::class, 'store']
@@ -72,3 +99,63 @@ Route::group(['prefix' => 'licenses', 'middleware' => ['auth']], function () {
 Route::resource('licenses', Licenses\LicensesController::class, [
     'middleware' => ['auth'],
 ]);
+
+// License seats management (with audit functionality)
+Route::get('license-seats', [Licenses\LicenseSeatsController::class, 'dueForAudit'])
+    ->name('license_seats.index')
+    ->breadcrumbs(fn (Trail $trail) =>
+    $trail->parent('licenses.index')
+        ->push(trans('admin/licenses/general.license_seats'), route('license_seats.index'))
+    );
+
+// Legacy route redirects for backward compatibility
+// UNUSED: Consider removing these legacy redirects if no longer needed
+// Route::get('seats/audit/due', function() {
+//     return redirect()->route('license_seats.index');
+// });
+
+// Route::get('seats', function() {
+//     return redirect()->route('license_seats.index');
+// });
+    
+Route::get('seats/{licenseSeat}/audit', [Licenses\LicenseSeatsController::class, 'audit'])
+    ->name('license_seats.audit.create')
+    ->breadcrumbs(fn (Trail $trail, LicenseSeat $licenseSeat) =>
+    $trail->parent('licenses.show', $licenseSeat->license)
+        ->push(trans('general.audit'))
+    );
+
+Route::post('seats/{licenseSeat}/audit',
+    [Licenses\LicenseSeatsController::class, 'auditStore']
+)->name('license_seats.audit.store');
+
+Route::post('seats/bulkaudit',
+    [Licenses\LicenseSeatsController::class, 'bulkAudit']
+)->name('license_seats.bulkaudit');
+
+// Handle GET requests to bulkaudit (for back button navigation) by redirecting to license seats page
+Route::get('seats/bulkaudit', function() {
+    return redirect()->route('license_seats.index');
+});
+
+Route::get('license-seats/bulkaudit', function() {
+    return redirect()->route('license_seats.index');
+});
+
+Route::post('seats/storeaudit',
+    [Licenses\LicenseSeatsController::class, 'storeBulkAudit']
+)->name('license_seats.storeaudit');
+
+// UNUSED: These routes are not reachable since the bulk actions 'audit_note' and 'audit_date' 
+// are commented out in LicenseSeatsController::bulkAudit()
+// Route::post('seats/storeauditnote',
+//     [Licenses\LicenseSeatsController::class, 'storeBulkAuditNote']
+// )->name('license_seats.storeauditnote');
+
+// Route::post('seats/storeauditdate',
+//     [Licenses\LicenseSeatsController::class, 'storeBulkAuditDate']
+// )->name('license_seats.storeauditdate');
+
+Route::post('seats/storebulknotes',
+    [Licenses\LicenseSeatsController::class, 'storeBulkNotes']
+)->name('license_seats.storebulknotes');

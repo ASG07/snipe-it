@@ -48,6 +48,11 @@ return [
         'success' => 'File successfully deleted.',
     ],
 
+    'updatefile' => [
+        'error'   => 'File note not updated. Please try again.',
+        'success' => 'File note successfully updated.',
+    ],
+
     'upload' => [
         'error'   => 'File(s) not uploaded. Please try again.',
         'success' => 'File(s) successfully uploaded.',

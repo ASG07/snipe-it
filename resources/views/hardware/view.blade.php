@@ -672,20 +672,20 @@
                                                 </strong>
                                             </div>
                                             <div class="col-md-9">
-                                                @if ($asset->model)
+                                                        @if ($asset->model)
 
-                                                    @can('view', \App\Models\AssetModel::class)
-                                                        <a href="{{ route('models.show', $asset->model->id) }}">
-                                                            {{ $asset->model->name }}
-                                                        </a>
-                                                    @else
-                                                        {{ $asset->model->name }}
-                                                    @endcan
+                                                            @can('view', \App\Models\AssetModel::class)
+                                                                <a href="{{ route('models.show', $asset->model->id) }}">
+                                                                    {{ $asset->model->name }}
+                                                                </a>
+                                                            @else
+                                                                {{ $asset->model->name }}
+                                                            @endcan
 
-                                                @endif
-                                            </div>
-                                        </div>
-                                    @endif
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            @endif
 
                                     <div class="row">
                                         <div class="col-md-3">
@@ -1479,6 +1479,7 @@
                                         filepath="private_uploads/assets/"
                                         showfile_routename="show/assetfile"
                                         deletefile_routename="delete/assetfile"
+                                        editfile_routename="edit/assetfile"
                                         :object="$asset" />
                             </div> <!-- /.col-md-12 -->
                         </div> <!-- /.row -->
@@ -1507,6 +1508,7 @@
 
     @can('update', \App\Models\Asset::class)
         @include ('modals.upload-file', ['item_type' => 'asset', 'item_id' => $asset->id])
+        @include ('modals.edit-file-note')
     @endcan
 @stop
             @section('moar_scripts')
@@ -1517,6 +1519,84 @@
                         var title = $(event.relatedTarget).data('title');
                         $(this).find(".modal-body").text(content);
                         $(this).find(".modal-header").text(title);
+                    });
+
+                    // handle edit file note modal, using event delegation for dynamic content
+                    $(document).on('click', '.edit-file-note', function(e) {
+                        e.preventDefault();
+                        
+                        var fileId = $(this).data('file-id');
+                        var editUrl = $(this).data('edit-url');
+                        var updateUrl = $(this).data('update-url');
+                        
+                        console.log('Edit URL:', editUrl);
+                        console.log('Update URL:', updateUrl);
+                        
+                        $('#editFileNoteForm').attr('action', updateUrl);
+                        
+                        // fetch the current file data
+                        $.ajax({
+                            url: editUrl,
+                            type: 'GET',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            success: function(data) {
+                                $('#edit_file_note').val(data.note || '');
+                                $('#edit_file_filename').text(data.filename);
+                                $('#edit_modal_error_msg').hide();
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('Error loading file data:', xhr, status, error);
+                                $('#edit_modal_error_msg').text('Error loading file data').show();
+                            }
+                        });
+                    });
+
+                    $('#editFileNoteForm').on('submit', function(e) {
+                        e.preventDefault();
+                        
+                        var form = $(this);
+                        var formData = form.serialize();
+                        var actionUrl = form.attr('action');
+                        
+                        console.log('Form action URL:', actionUrl);
+                        console.log('Form data:', formData);
+                        
+                        // disable submit button to prevent double submission
+                        $('#edit-modal-save').prop('disabled', true).text('Saving...');
+                        
+                        $.ajax({
+                            url: actionUrl,
+                            type: 'PUT',
+                            data: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            success: function(response) {
+                                console.log('Success response:', response);
+                                // reload page
+                                $('#editFileNoteModal').modal('hide');
+                                location.reload();
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('Error updating file note:', xhr, status, error);
+                                console.log('Response text:', xhr.responseText);
+                                
+                                var errorMsg = 'Error updating file note';
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMsg = xhr.responseJSON.message;
+                                } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                                    var errors = xhr.responseJSON.errors;
+                                    errorMsg = Object.values(errors).flat().join('<br>');
+                                }
+                                $('#edit_modal_error_msg').html(errorMsg).show();
+                            },
+                            complete: function() {
+                                $('#edit-modal-save').prop('disabled', false).text('{{ trans('general.save') }}');
+                            }
+                        });
                     });
 
                 </script>
