@@ -218,7 +218,7 @@ install_composer () {
   fi
 
   if [ "$EXPECTED_SIGNATURE" != "$ACTUAL_SIGNATURE" ]; then
-    >?&2 echo 'ERROR: Invalid composer installer signature'
+    >&2 echo 'ERROR: Invalid composer installer signature'
     exit 1
   fi
 
@@ -381,7 +381,7 @@ case $distro in
     apache_group=www-data
     apachefile=/etc/apache2/sites-available/$APP_NAME.conf
     ;;
-  *amzn*|*redhat*|*alma*|*rhel*|*rocky*)
+  *amzn*|*redhat*|*alma*|*rhel*|*rocky*|*centos*)
     echo "  The installer has detected $distro version $version."
     distro=Centos
     apache_group=apache

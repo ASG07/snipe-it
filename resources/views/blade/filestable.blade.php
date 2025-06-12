@@ -14,6 +14,8 @@
             data-id-table="{{ str_slug($object->name ?? $object->id) }}UploadsTable"
             id="{{ str_slug($object->name ?? $object->id) }}UploadsTable"
             data-search="true"
+            data-search-highlight="true"
+            data-show-print="true"
             data-pagination="true"
             data-side-pagination="client"
             data-show-columns="true"
@@ -121,7 +123,7 @@
                     @endif
                 </td>
                 <td>
-                    {{ $file->created_at }}
+                    {{ $file->created_at ? Helper::getFormattedDateObject($file->created_at, 'datetime', false) : '' }}
                 </td>
                 <td>
                     {{ ($file->adminuser) ? $file->adminuser->present()->getFullNameAttribute() : '' }}
