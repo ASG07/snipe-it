@@ -108,15 +108,6 @@ Route::get('license-seats', [Licenses\LicenseSeatsController::class, 'dueForAudi
         ->push(trans('admin/licenses/general.license_seats'), route('license_seats.index'))
     );
 
-// Legacy route redirects for backward compatibility
-// UNUSED: Consider removing these legacy redirects if no longer needed
-// Route::get('seats/audit/due', function() {
-//     return redirect()->route('license_seats.index');
-// });
-
-// Route::get('seats', function() {
-//     return redirect()->route('license_seats.index');
-// });
     
 Route::get('seats/{licenseSeat}/audit', [Licenses\LicenseSeatsController::class, 'audit'])
     ->name('license_seats.audit.create')
@@ -146,15 +137,6 @@ Route::post('seats/storeaudit',
     [Licenses\LicenseSeatsController::class, 'storeBulkAudit']
 )->name('license_seats.storeaudit');
 
-// UNUSED: These routes are not reachable since the bulk actions 'audit_note' and 'audit_date' 
-// are commented out in LicenseSeatsController::bulkAudit()
-// Route::post('seats/storeauditnote',
-//     [Licenses\LicenseSeatsController::class, 'storeBulkAuditNote']
-// )->name('license_seats.storeauditnote');
-
-// Route::post('seats/storeauditdate',
-//     [Licenses\LicenseSeatsController::class, 'storeBulkAuditDate']
-// )->name('license_seats.storeauditdate');
 
 Route::post('seats/storebulknotes',
     [Licenses\LicenseSeatsController::class, 'storeBulkNotes']
